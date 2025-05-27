@@ -7,8 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: url('mansion.png') no-repeat center center;
-            background-attachment: scroll;
+            background: url('mansion.png') no-repeat center center fixed;
             background-size: cover;
             color: white;
             text-align: center;
@@ -17,30 +16,35 @@
         .container {
             max-width: 600px;
             margin: auto;
-            background: rgba(68, 68, 68, 0.8);
+            background: rgba(20, 20, 20, 0.9);
             padding: 20px;
             border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
         }
         button {
-            width: 100%;
-            background: #ff4500;
-            color: white;
-            border: none;
-            padding: 15px;
-            margin: 10px 0;
-            cursor: pointer;
+            background: #ff5733;
+            border-radius: 8px;
+            font-weight: bold;
+            padding: 12px;
             font-size: 16px;
-            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
         }
-        .fireworks {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            display: none;
-            background: url('fireworks.gif') center no-repeat;
-            background-size: cover;
+        button:hover {
+            background: #e64a19;
+        }
+        #room-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            justify-items: center;
+            margin-bottom: 15px;
+        }
+        .special-actions {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
         }
         .win-message {
             font-size: 24px;
@@ -56,78 +60,104 @@
         <p>Du er en detektiv og må finne spor for å løse mysteriet!</p>
         <button onclick="revealClue()">Avslør et spor</button>
         <button onclick="interrogate()">Avhør en mistenkt</button>
+        <button onclick="showProgress()">Vis progresjon</button>
         <button onclick="makeGuess()">Gjett hvem morderen er</button>
+        
+        <p>Velg et rom å undersøke:</p>
+        <div id="room-buttons">
+            <button onclick="investigateRoom('Biblioteket')">Biblioteket</button>
+            <button onclick="investigateRoom('Spisestuen')">Spisestuen</button>
+            <button onclick="investigateRoom('Balsalen')">Balsalen</button>
+            <button onclick="investigateRoom('Kjelleren')">Kjelleren</button>
+            <button onclick="investigateRoom('Kontoret')">Kontoret</button>
+            <button onclick="investigateRoom('Åstedet')">Åstedet</button>
+        </div>
+
+        <div class="special-actions">
+            <p>Spesialhandlinger:</p>
+            <button onclick="unlockHiddenRoom()">Lås opp Hemmelig Kammer</button>
+            <button onclick="investigateHiddenRoom()">Undersøk Hemmelig Kammer</button>
+        </div>
+
         <p id="message"></p>
         <p id="win-message" class="win-message">🎉 Gratulerer! Du fant morderen! 🎉</p>
     </div>
-    <div class="fireworks" id="fireworks"></div>
 
     <script>
-        const clues = ["En ødelagt klokke", "Blodige hansker", "En mystisk lapp", "En skjult inngang"];
-        const suspects = ["Mr. Black", "Miss Scarlet", "Professor Plum", "Colonel Mustard"];
+        const roomObjects = {
+            "Biblioteket": ["Gamle bøker", "En knust brille", "Et brev med kryptisk skrift"],
+            "Spisestuen": ["Et sølt vinglass", "En forsvunnet kniv", "En serviett med blod"],
+            "Balsalen": ["Dansesko med leire", "En mystisk maske", "En revnet frakk"],
+            "Kjelleren": ["Et hemmelig kart", "En rusten nøkkel", "En ødelagt lyspære"],
+            "Kontoret": ["En revet kontrakt", "En skjult safe", "Et halvferdig notat"],
+            "Åstedet": ["Blodige hansker", "En ødelagt klokke", "En mystisk lapp"]
+        };
+
+        const suspectDialogues = {
+            "Mr. Black": ["Jeg var på kontoret hele tiden!", "Jeg så noe mistenkelig i kjelleren...", "Det var ikke meg!"],
+            "Miss Scarlet": ["Jeg var i balsalen og danset...", "Jeg hørte et skrik fra åstedet!", "Jeg kan ikke tro dette skjedde!"],
+            "Professor Plum": ["Jeg studerte gamle dokumenter i biblioteket.", "Jeg så Colonel Mustard komme ut fra kjelleren!", "Jeg var opptatt med mine analyser."],
+            "Colonel Mustard": ["Jeg var i spisestuen og spiste middag.", "Jeg så noen løpe fra åstedet!", "Jeg var alene hele tiden..."]
+        };
+
         let murderer = getNewMurderer();
-        let attempts = 2;
+        let revealedClues = [];
+        let interrogatedSuspects = [];
+        let guessAttempts = 2; 
+        let hasKey = false;
+        let isHiddenRoomUnlocked = false;
 
         function getNewMurderer() {
+            const suspects = Object.keys(suspectDialogues);
             return suspects[Math.floor(Math.random() * suspects.length)];
         }
 
         function revealClue() {
-            let clue = clues[Math.floor(Math.random() * clues.length)];
-            document.getElementById("message").innerText = `Du har funnet et spor: ${clue}!`;
+            let clue = Object.values(roomObjects)[Math.floor(Math.random() * Object.values(roomObjects).length)][0];
+            revealedClues.push(clue);
+            document.getElementById("message").innerText = `🔍 Spor funnet: ${clue}!`;
         }
 
         function interrogate() {
-            let suspect = suspects[Math.floor(Math.random() * suspects.length)];
-            let clue = clues[Math.floor(Math.random() * clues.length)];
-            let message = `Du avhører ${suspect}... Du finner et spor: ${clue}! `;
+            let suspect = Object.keys(suspectDialogues)[Math.floor(Math.random() * Object.keys(suspectDialogues).length)];
+            interrogatedSuspects.push(suspect);
+            let dialogue = suspectDialogues[suspect][Math.floor(Math.random() * suspectDialogues[suspect].length)];
+            document.getElementById("message").innerText = `🕵️ Du avhører ${suspect}: "${dialogue}"`;
+        }
 
-            if (suspect === murderer) {
-                message += " Noe virker mistenkelig! 🤨";
-            } else {
-                message += " Personen gir et troverdig svar.";
+        function investigateRoom(room) {
+            let objects = roomObjects[room];
+            let foundObject = objects[Math.floor(Math.random() * objects.length)];
+            document.getElementById("message").innerText = `🔎 Du undersøker ${room} og finner: ${foundObject}.`;
+
+            if (foundObject === "En rusten nøkkel") {
+                hasKey = true;
+                document.getElementById("message").innerText += " 🗝️ Du fant en nøkkel!";
             }
-            document.getElementById("message").innerText = message;
+        }
+        
+        function showProgress() {
+            let progressMessage = `🔎 Spor funnet: ${revealedClues.length > 0 ? revealedClues.join(", ") : "Ingen spor funnet"}.\n`;
+            progressMessage += `🕵️ Mistenkte avhørt: ${interrogatedSuspects.length > 0 ? interrogatedSuspects.join(", ") : "Ingen avhør gjennomført"}.`;
+            document.getElementById("message").innerText = progressMessage;
         }
 
         function makeGuess() {
-            if (attempts > 0) {
-                let guess = prompt("Hvem tror du er morderen? (Skriv kun fornavn)");
-                let cleanedGuess = guess.trim().toLowerCase();
+            if (guessAttempts > 0) {
+                let guess = prompt("Hvem tror du er morderen? (Skriv kun fornavn)").trim().toLowerCase();
                 let cleanedMurderer = murderer.replace(/^(Mr\.|Miss|Professor|Colonel)\s/, "").toLowerCase();
 
-                if (cleanedGuess === cleanedMurderer) {
-                    document.getElementById("message").innerText = "";
+                if (guess === cleanedMurderer) {
                     document.getElementById("win-message").style.display = "block";
-                    triggerFireworks();
+                    document.getElementById("message").innerText = "🎉 Du gjettet riktig! Morderen er avslørt!";
                 } else {
-                    attempts--;
-                    if (attempts > 0) {
-                        document.getElementById("message").innerText = "Feil gjetning! Prøv igjen... 🔍";
-                    } else {
-                        document.getElementById("message").innerText = "Feil gjetning! Morderen slipper unna... 😈";
-                        resetGame();
+                    guessAttempts--;
+                    document.getElementById("message").innerText = `❌ Feil gjetning! Du har ${guessAttempts} forsøk igjen.`;
+                    if (guessAttempts === 0) {
+                        document.getElementById("message").innerText = "💀 Du har brukt opp dine gjetninger. Spillet er over!";
                     }
                 }
             }
-        }
-
-        function triggerFireworks() {
-            let fireworks = document.getElementById("fireworks");
-            fireworks.style.display = "block";
-            setTimeout(() => {
-                fireworks.style.display = "none";
-                document.getElementById("win-message").style.display = "none";
-                resetGame();
-            }, 3000);
-        }
-
-        function resetGame() {
-            murderer = getNewMurderer();
-            attempts = 2;
-            setTimeout(() => {
-                document.getElementById("message").innerText = "Ny runde! En ny morder er løs... 🚨";
-            }, 2000);
         }
     </script>
 </body>
