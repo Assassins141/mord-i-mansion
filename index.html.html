@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mord i Mansion - Solo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2b2b2b;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #444;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        button {
+            width: 100%;
+            background: #ff4500;
+            color: white;
+            border: none;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        .fireworks {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: none;
+            background: url('/attachments/sENZLdN7Woh5t11Jrp1rc.jpeg') center no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mord i Mansion - Solo</h1>
+        <p>Du er en detektiv og må finne spor for å løse mysteriet!</p>
+        <button onclick="revealClue()">Avslør et spor</button>
+        <button onclick="interrogate()">Avhør en mistenkt</button>
+        <button onclick="makeGuess()">Gjett hvem morderen er</button>
+        <p id="message"></p>
+    </div>
+    <div class="fireworks" id="fireworks"></div>
+
+    <script>
+        const clues = ["En ødelagt klokke", "Blodige hansker", "En mystisk lapp", "En skjult inngang"];
+        const suspects = ["Mr. Black", "Miss Scarlet", "Professor Plum", "Colonel Mustard"];
+        let murderer = getNewMurderer();
+        let attempts = 2;
+
+        function getNewMurderer() {
+            return suspects[Math.floor(Math.random() * suspects.length)];
+        }
+
+        function revealClue() {
+            let clue = clues[Math.floor(Math.random() * clues.length)];
+            document.getElementById("message").innerText = `Du har funnet et spor: ${clue}!`;
+        }
+
+        function interrogate() {
+            let suspect = suspects[Math.floor(Math.random() * suspects.length)];
+            let message = `Du avhører ${suspect}... ${suspect} virker nervøs!`;
+
+            if (suspect === murderer) {
+                message += " Noe virker mistenkelig! 🤨";
+            } else {
+                message += " Personen gir et troverdig svar.";
+            }
+            document.getElementById("message").innerText = message;
+        }
+
+        function makeGuess() {
+            if (attempts > 0) {
+                let guess = prompt("Hvem tror du er morderen? (Skriv kun fornavn)");
+                let cleanedGuess = guess.trim().toLowerCase();
+                let cleanedMurderer = murderer.replace(/^(Mr\.|Miss|Professor|Colonel)\s/, "").toLowerCase();
+
+                if (cleanedGuess === cleanedMurderer) {
+                    document.getElementById("message").innerText = "Gratulerer! Du fant morderen!";
+                    triggerFireworks();
+                } else {
+                    attempts--;
+                    if (attempts > 0) {
+                        document.getElementById("message").innerText = "Feil gjetning! Prøv igjen... 🔍";
+                    } else {
+                        document.getElementById("message").innerText = "Feil gjetning! Morderen slipper unna... 😈";
+                        resetGame();
+                    }
+                }
+            }
+        }
+
+        function triggerFireworks() {
+            let fireworks = document.getElementById("fireworks");
+            fireworks.style.display = "block";
+            setTimeout(() => {
+                fireworks.style.display = "none";
+                resetGame();
+            }, 3000);
+        }
+
+        function resetGame() {
+            murderer = getNewMurderer();
+            attempts = 2;
+            setTimeout(() => {
+                document.getElementById("message").innerText = "Ny runde! En ny morder er løs... 🚨";
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
